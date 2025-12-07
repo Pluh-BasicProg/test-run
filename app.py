@@ -6,6 +6,11 @@ import re
 from openai import OpenAI
 import google.generativeai as genai
 
+genai.configure(api_key="AIzaSyCAi_HIMsp2CQ54WBjSrRmyiKSWsbxynQ0")
+
+for m in genai.list_models():
+        if "generateContent" in m.supported_generation_methods:
+            print(m.name)
 # ---------------------------------------------------------
 # Streamlit Setup
 # ---------------------------------------------------------
@@ -102,11 +107,20 @@ def call_openai(prompt):
     return res.choices[0].message.content
 
 
-def call_gemini(prompt):
+def call_gemini(prompt, gemini_key):
+    import google.generativeai as genai
+
     genai.configure(api_key=gemini_key)
-    model = genai.GenerativeModel("gemini-1.5-pro")
-    res = model.generate_content(prompt)
-    return res.text
+
+    # widely supported model
+    model = genai.GenerativeModel("gemini-2.5-flash-lite")
+
+    response = model.generate_content(prompt)
+    return response.text
+
+
+
+
 
 
 # ---------------------------------------------------------
@@ -130,7 +144,7 @@ if st.button("Generate"):
                 if not gemini_key:
                     st.error("Please enter your Gemini API key in the sidebar.")
                     st.stop()
-                raw_output = call_gemini(prompt)
+                raw_output = call_gemini(prompt, gemini_key)
 
             parsed = extract_json(raw_output)
 
@@ -156,3 +170,4 @@ if st.button("Generate"):
 
         except Exception as e:
             st.error(f"Error: {e}")
+
